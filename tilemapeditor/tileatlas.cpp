@@ -4,57 +4,69 @@
 TileAtlas::TileAtlas(Editor& editor) : editor(editor) {}
 
 // function to load the image into a texture which will be used as the tile atlas, tileWidth/Height will be defined as 16, 16 when called in the editor
-bool TileAtlas::Initialize() {
+bool TileAtlas::Initialize()
+{
     if (!textureAtlas.loadFromFile("assets/map/tilemap16.png")) { return false; }
     atlasSprite.setTexture(textureAtlas);
     atlasSprite.setPosition(0.f, 0.f); // set to top left of the atlas viewport
     return true;
 }
 
-void TileAtlas::HandleSelection(sf::Vector2f mousePos, bool isSelecting, float deltaTime) {
-    // adjust mouse position by adding the atlas view offset and dividing by the scale factor
+void TileAtlas::HandleSelection(sf::Vector2f mousePos, bool isSelecting, float deltaTime) 
+{
+    // Adjust mouse position by accounting for panning and zoom
     sf::Vector2f adjustedMousePos = (mousePos + editor.atlasViewOffset) / editor.atlasScaleFactor;
-    // snap the mouse selection to the nearest grid position (so selection start and end are always in a gridcell)
+
+    // Snap to grid using the base tile size
     sf::Vector2i texturePos(
         static_cast<int>(adjustedMousePos.x / editor.baseTileSize) * editor.baseTileSize,
         static_cast<int>(adjustedMousePos.y / editor.baseTileSize) * editor.baseTileSize
     );
-    // if true was passed in from handle events, and we aren't already selecting, start a new selection and store the starting indices
+
     if (isSelecting) {
         if (!this->isSelecting) {
-            this->isSelecting = true;   // start a new selection
-            selectionStartIndices = texturePos; // store the starting grid position
+            this->isSelecting = true;
+            selectionStartIndices = texturePos;
             editor.GetTileMap()->currentSelection.selectionBounds.left = texturePos.x;
             editor.GetTileMap()->currentSelection.selectionBounds.top = texturePos.y;
         }
-        selectionEndIndices = texturePos;   // update the end of the selection constantly until false is passed in
-        editor.GetTileMap()->currentSelection.selectionBounds.width = texturePos.x - editor.GetTileMap()->currentSelection.selectionBounds.left;
-        editor.GetTileMap()->currentSelection.selectionBounds.height = texturePos.y - editor.GetTileMap()->currentSelection.selectionBounds.top;
+        // update selection bounds as the mouse moves
+        selectionEndIndices = texturePos;
+        editor.GetTileMap()->currentSelection.selectionBounds.width = texturePos.x
+            - editor.GetTileMap()->currentSelection.selectionBounds.left;
+        editor.GetTileMap()->currentSelection.selectionBounds.height = texturePos.y
+            - editor.GetTileMap()->currentSelection.selectionBounds.top;
     }
-    else {  // else if false was passed in (right click released), finalize the selection and get the whole selections bounds
+    else {
         if (this->isSelecting) {
-            this->isSelecting = false;  // finalize the selection
-            // calculate selection bounds
+            this->isSelecting = false;
+            // Finalize the selection bounds
             sf::IntRect bounds = GetSelectionBounds();
             editor.GetTileMap()->currentSelection.selectionBounds = bounds;
-            // clear previous selections and populate textureRects with the new selection for placement
-            editor.GetTileMap()->currentSelection.textureRects.clear();
-            editor.GetTileMap()->currentSelection.indices.clear();
+            // Clear any previous selection data
+            editor.GetTileMap()->currentSelection.tiles.clear();
 
-            sf::Vector2u atlasSize = textureAtlas.getSize();
-            int tilesPerRow = atlasSize.x / editor.baseTileSize;
+            // Compute the starting tile indices in grid units
+            int startTileX = selectionStartIndices.x / editor.baseTileSize;
+            int startTileY = selectionStartIndices.y / editor.baseTileSize;
+
+            // Loop over the selected region and record each tile with its relative offset
             for (int y = bounds.top; y < bounds.top + bounds.height; y += editor.baseTileSize) {
                 for (int x = bounds.left; x < bounds.left + bounds.width; x += editor.baseTileSize) {
-                    editor.GetTileMap()->currentSelection.textureRects.emplace_back(x, y, editor.baseTileSize, editor.baseTileSize);
-                    int tileIndex = (y / editor.baseTileSize) * tilesPerRow + (editor.baseTileSize);
-                    editor.GetTileMap()->currentSelection.indices.push_back(tileIndex);
+                    TileMap::SelectedTileData data;
+                    data.textureRect = sf::IntRect(x, y, editor.baseTileSize, editor.baseTileSize);
+                    int currentTileX = x / editor.baseTileSize;
+                    int currentTileY = y / editor.baseTileSize;
+                    data.offset = sf::Vector2i(currentTileX - startTileX, currentTileY - startTileY);
+                    editor.GetTileMap()->currentSelection.tiles.push_back(data);
                 }
             }
         }
     }
 }
 
-void TileAtlas::DrawAtlas(sf::RenderTarget& target) {
+void TileAtlas::DrawAtlas(sf::RenderTarget& target)
+{
     sf::Vector2f offset = editor.atlasViewOffset;   // offset is based on the view offset which updates when panning
     float scaledTileSize = atlasTileSize; // scaledTileSize is based on tileSize which updates when zooming
     // scale the atlas sprite tiles based on the zoom
@@ -83,7 +95,8 @@ void TileAtlas::DrawAtlas(sf::RenderTarget& target) {
     }
 }
 
-void TileAtlas::DrawDragSelection(sf::RenderTarget& target) {
+void TileAtlas::DrawDragSelection(sf::RenderTarget& target)
+{
     // when isSelecting is passed in as true to handle selection, draw a selection box based on the calculated bounds
     if (isSelecting) {
         sf::IntRect bounds = GetSelectionBounds();  // get the bounds of the selection rectangle based on the start and end selection indices
@@ -104,7 +117,8 @@ void TileAtlas::DrawDragSelection(sf::RenderTarget& target) {
     }
 }
 
-sf::IntRect TileAtlas::GetSelectionBounds() const {
+sf::IntRect TileAtlas::GetSelectionBounds() const 
+{
     int left = std::min(selectionStartIndices.x, selectionEndIndices.x);
     int top = std::min(selectionStartIndices.y, selectionEndIndices.y);
     int right = std::max(selectionStartIndices.x, selectionEndIndices.x) + editor.baseTileSize;
@@ -112,7 +126,9 @@ sf::IntRect TileAtlas::GetSelectionBounds() const {
     return sf::IntRect(left, top, right - left, bottom - top);  // return the selection bounds
 }
 
-void TileAtlas::HandlePanning(sf::Vector2f mousePos, bool isPanning, float deltaTime) {
+void TileAtlas::HandlePanning(sf::Vector2f mousePos, bool isPanning,
+    float deltaTime) 
+{
     static sf::Vector2f lastMousePos;
     if (isPanning) {
         if (lastMousePos != sf::Vector2f(0, 0)) {
@@ -127,7 +143,8 @@ void TileAtlas::HandlePanning(sf::Vector2f mousePos, bool isPanning, float delta
     }
 }
 
-void TileAtlas::UpdateTileSize(float scaleFactor) {
+void TileAtlas::UpdateTileSize(float scaleFactor) 
+{
     // calculate new tile size for zooming using the base tile size and scale factor
     atlasTileSize = static_cast<int>(editor.baseTileSize * scaleFactor);
 }

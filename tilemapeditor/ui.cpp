@@ -1,10 +1,12 @@
 #include "ui.h"
-#include <iostream>
+#include "editor.h"
+#include "tilemap.h"
 
 UI::UI(Editor& editor) : editor(editor) {}
 
 // load the ui font, will be called when a new ui instance is initialized in editor
-bool UI::Initialize() {
+bool UI::Initialize() 
+{
     if (!font.loadFromFile("assets/fonts/font.ttf")) {
         std::cerr << "Failed to load font: \n";
         return false;
@@ -12,18 +14,20 @@ bool UI::Initialize() {
     return true;
 }
 
-void UI::HandleInteraction(const sf::Vector2f& mousePos, sf::RenderWindow& window) {
+void UI::HandleInteraction(const sf::Vector2f& mousePos,
+    sf::RenderWindow& window)
+{
     for (const auto& button : buttons) {
-        // check each buttons bounds to see if it contains the mouse position passed in from handle events
+        // check each buttons bounds to see if it contains the mouse position
         if (button.shape.getGlobalBounds().contains(mousePos)) {
             // get the label text from each button
             std::string label = button.label.getString();
-            // save the last clicked button if either save or load tilemap buttons were clicked
             if (label == "Save Tilemap" || label == "Load Tilemap") {
                 lastClickedButton = label;
-                ActivateTextInput();    // activate text input for saving or loading a tile map file
+                // activate text input for saving or loading a tile map file
+                ActivateTextInput();    
             }
-            // depending on which label was on the pressed button, pass different layer dimensions to add layer function to create a new layer
+            // depending on which button was pressed, pass different layer sizes
             else if (label == "50x50 Grid") {
                 editor.GetTileMap()->AddLayer(50, 50);
             }
@@ -34,12 +38,18 @@ void UI::HandleInteraction(const sf::Vector2f& mousePos, sf::RenderWindow& windo
                 editor.GetTileMap()->AddLayer(200, 200);
             }
             else if (label == "Merge Layers") {
-                editor.GetTileMap()->showMergedLayers = !editor.GetTileMap()->showMergedLayers; // toggle showMergedLayers bool to true or false everytime button is pressed
-                editor.GetTileMap()->MergeAllLayers(window, editor.GetTileMap()->showMergedLayers); // merge layers depending on the current bool state
+                // toggle showMergedLayers bool everytime button is pressed
+                editor.GetTileMap()->showMergedLayers 
+                    = !editor.GetTileMap()->showMergedLayers; 
+                // merge layers depending on the current bool state
+                editor.GetTileMap()->MergeAllLayers(window,
+                    editor.GetTileMap()->showMergedLayers); 
             }
             else if (label == "Toggle Collision") {
-                editor.GetTileMap()->showCollisionOverlay = !editor.GetTileMap()->showCollisionOverlay;
-                editor.GetTileMap()->DrawCollisionOverlay(window, editor.GetTileMap()->GetCurrentLayerIndex());
+                editor.GetTileMap()->showCollisionOverlay
+                    = !editor.GetTileMap()->showCollisionOverlay;
+                editor.GetTileMap()->DrawCollisionOverlay(window,
+                    editor.GetTileMap()->GetCurrentLayerIndex());
             }
             std::cout << "Button clicked: " << label << "\n";
             break; // exit once the click was handled
@@ -47,7 +57,8 @@ void UI::HandleInteraction(const sf::Vector2f& mousePos, sf::RenderWindow& windo
     }
 }
 
-void UI::DrawUI(sf::RenderWindow& window) {
+void UI::DrawUI(sf::RenderWindow& window) 
+{
     // populate the buttons vector if empty 
     if (buttons.empty()) {
         // define the properties of the UI buttons
@@ -56,7 +67,7 @@ void UI::DrawUI(sf::RenderWindow& window) {
         // starting x, y position of buttons relative to the viewport
         float startX = 5.f;
         float startY = 5.f;
-        // define the buttons labels with dimensions since each button will create a new layer of that size
+        // define the buttons labels
         std::vector<std::string> buttonLabels = {
             "50x50 Grid",
             "100x100 Grid",
@@ -72,7 +83,8 @@ void UI::DrawUI(sf::RenderWindow& window) {
             Button button;
             button.shape.setSize(buttonSize);
             button.shape.setFillColor(sf::Color(150, 150, 150));
-            button.shape.setPosition(startX, startY + i * (buttonSize.y + buttonSpacing));
+            button.shape.setPosition(startX, startY + i * (buttonSize.y
+                + buttonSpacing));
             // set the properties of the button label
             button.label.setFont(font);
             button.label.setString(buttonLabels[i]);
@@ -81,8 +93,10 @@ void UI::DrawUI(sf::RenderWindow& window) {
             // center the label on the button
             sf::FloatRect textBounds = button.label.getLocalBounds();
             button.label.setPosition(
-                button.shape.getPosition().x + (buttonSize.x - textBounds.width) / 2.f - textBounds.left,
-                button.shape.getPosition().y + (buttonSize.y - textBounds.height) / 2.f - textBounds.top
+                button.shape.getPosition().x + (buttonSize.x - textBounds.width)
+                / 2.f - textBounds.left,
+                button.shape.getPosition().y + (buttonSize.y - textBounds.height)
+                / 2.f - textBounds.top
             );
             // store the button in the ui buttons vector
             buttons.push_back(button);
@@ -95,7 +109,8 @@ void UI::DrawUI(sf::RenderWindow& window) {
     }
 }
 
-void UI::ActivateTextInput() {
+void UI::ActivateTextInput() 
+{
     isTextInputActive = true;
     inputText.clear();
     // set up input box
@@ -106,10 +121,12 @@ void UI::ActivateTextInput() {
     inputTextDisplay.setFont(font);
     inputTextDisplay.setCharacterSize(20);
     inputTextDisplay.setFillColor(sf::Color::Black);
-    inputTextDisplay.setPosition(inputBox.getPosition().x + 10.f, inputBox.getPosition().y + 10.f);
+    inputTextDisplay.setPosition(inputBox.getPosition().x + 10.f,
+        inputBox.getPosition().y + 10.f);
 }
 
-void UI::HandleTextInput(const sf::Event& event) {
+void UI::HandleTextInput(const sf::Event& event)
+{
     if (isTextInputActive) {
         if (event.type == sf::Event::TextEntered) {
             // handle text input (except special characters like backspace)
@@ -142,7 +159,8 @@ void UI::HandleTextInput(const sf::Event& event) {
     }
 }
 
-void UI::DrawTextInput(sf::RenderWindow& window) {
+void UI::DrawTextInput(sf::RenderWindow& window)
+{
     if (isTextInputActive) {
         inputTextDisplay.setString(inputText);
         window.draw(inputBox);

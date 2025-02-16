@@ -2,11 +2,7 @@
 #define UI_H
 
 #include <SFML/Graphics.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/Texture.hpp>
 #include <vector>
-#include "editor.h"
 
 class Editor;
 

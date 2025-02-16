@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="editor.cpp" />
-    <ClCompile Include="layer.cpp" />
+    <ClCompile Include="tilemap.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tileatlas.cpp" />
     <ClCompile Include="ui.cpp" />
@@ -28,7 +28,7 @@
   <ItemGroup>
     <ClInclude Include="editor.h" />
     <ClInclude Include="json.hpp" />
-    <ClInclude Include="layer.h" />
+    <ClInclude Include="tilemap.h" />
     <ClInclude Include="tileatlas.h" />
     <ClInclude Include="ui.h" />
   </ItemGroup>
@@ -127,7 +127,7 @@
       <PreprocessorDefinitions>SFML_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>F:\Repos\tilemapeditor\tilemapeditor\SFML-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
