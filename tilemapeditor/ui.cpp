@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "editor.h"
+#include "utility.h"
 #include "tilemap.h"
 
 UI::UI(Editor& editor) : editor(editor) {}

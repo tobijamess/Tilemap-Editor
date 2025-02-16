@@ -18,11 +18,14 @@ void TileMap::AddLayer(int width, int height)
     newLayer.index = layers.size();
     newLayer.layer.resize(height, std::vector<Tile>(width));
     newLayer.collisionGrid.resize(height, std::vector<bool>(width, false));
-    layers.push_back(newLayer);             // push the new layer back into the layers vector
-    activeLayerIndex = layers.size() - 1;   // set this new layer as the current/active layer
+    // push the new layer back into the layers vector
+    layers.push_back(newLayer);
+    // set this new layer as the current / active layer
+    activeLayerIndex = layers.size() - 1;
 }
 
-void TileMap::AddTile(const sf::Texture& texture, const sf::IntRect& rect, int index, int x, int y) 
+void TileMap::AddTile(const sf::Texture& texture, const sf::IntRect& rect,
+    int index, int x, int y) 
 {
     if (activeLayerIndex < 0 || activeLayerIndex >= layers.size()) return;
 
@@ -33,8 +36,10 @@ void TileMap::AddTile(const sf::Texture& texture, const sf::IntRect& rect, int i
         tile.index = index;
         tile.sprite.setTexture(texture);
         tile.sprite.setTextureRect(rect);
-        tile.sprite.setScale(layerScaleFactor, layerScaleFactor);       // apply scale factor to the layer tiles
-        tile.sprite.setPosition(x * layerTileSize, y * layerTileSize);  // apply position based on the tile size
+        // apply scale factor to the layer tiles
+        tile.sprite.setScale(layerScaleFactor, layerScaleFactor); 
+        // apply position based on the tile size
+        tile.sprite.setPosition(x * layerTileSize, y * layerTileSize);  
     }
 }
 
@@ -49,7 +54,8 @@ void TileMap::HandleTilePlacement(const sf::Vector2f& mousePos)
     if (currentSelection.tiles.empty()) return;
 
     // convert mouse position to grid coordinates (accounting for zoom/panning)
-    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset) / layerScaleFactor;
+    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset)
+        / layerScaleFactor;
     int gridX = static_cast<int>(adjustedMousePos.x / editor.baseTileSize);
     int gridY = static_cast<int>(adjustedMousePos.y / editor.baseTileSize);
 
@@ -58,37 +64,41 @@ void TileMap::HandleTilePlacement(const sf::Vector2f& mousePos)
         // compute the target grid position using the stored offset
         int targetX = gridX + tileData.offset.x;
         int targetY = gridY + tileData.offset.y;
-        // optionally update the currentSelection index based on the tile’s atlas position
+        // optionally update currentSelection's index based on tile’s atlas position
         currentSelection.index = (tileData.textureRect.top / editor.baseTileSize) *
             (tileAtlas.GetTexture().getSize().x / editor.baseTileSize) +
             (tileData.textureRect.left / editor.baseTileSize);
         // place the tile on the current layer
-        AddTile(tileAtlas.GetTexture(), tileData.textureRect, currentSelection.index, targetX, targetY);
+        AddTile(tileAtlas.GetTexture(), tileData.textureRect, currentSelection.index,
+            targetX, targetY);
     }
 }
 
 void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)
 {
-
     // don't try to draw a non-existant layer to the window
     if (index < 0 || index >= layers.size()) {  
         std::cerr << "Invalid layer index for rendering: " << index << "\n";
         return;
     }
 
-    sf::Vector2f offset = editor.layerViewOffset;   // get the offset of the layer view that is updated when panning
-    const TileLayer& layer = layers[index];         // get the active TileLayer instance from the layers vector
+    // get the offset of the layer view that is updated when panning
+    sf::Vector2f offset = editor.layerViewOffset;
+    // get the active TileLayer instance from the layers vector
+    const TileLayer& layer = layers[index]; 
 
-    // each tiles position is calculated based on its coordinates in the grid (x * layerTileSize, y * layerTileSize)
+    // each tiles position is calculated based on its coordinates in the grid
+    // (x * layerTileSize, y * layerTileSize)
     for (int y = 0; y < layer.height; ++y) {
         for (int x = 0; x < layer.width; ++x) {
             sf::Vector2f tilePosition(static_cast<float>(x * layerTileSize),
                 static_cast<float>(y * layerTileSize));
             const Tile& tile = layer.layer[y][x];
-            // if tile exists, retrieve it from the Tile struct, set its position and draw it
+            // if tile exists, retrieve it from the Tile struct, set position and draw it
             if (tile.index >= 0) {
                 sf::Sprite tileSprite = tile.sprite;      
-                tileSprite.setColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(layer.opacity * 255)));
+                tileSprite.setColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(
+                    layer.opacity * 255)));
                 // adjust position relative to panning offset
                 tileSprite.setPosition(tilePosition - offset);
                 target.draw(tileSprite);
@@ -121,12 +131,14 @@ void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)
 
 // -------------------------------- COLLISION LAYER FUNCTIONS --------------------------------
 
-void TileMap::HandleCollisionPlacement(const sf::Vector2f& mousePos, bool addCollision)
+void TileMap::HandleCollisionPlacement(const sf::Vector2f& mousePos,
+    bool addCollision)
 {
     if (activeLayerIndex < 0 || activeLayerIndex >= layers.size()) return;
 
     TileLayer& currentLayer = layers[activeLayerIndex];
-    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset) / layerScaleFactor;
+    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset)
+        / layerScaleFactor;
 
     int gridX = static_cast<int>(adjustedMousePos.x / editor.baseTileSize);
     int gridY = static_cast<int>(adjustedMousePos.y / editor.baseTileSize);
@@ -143,7 +155,7 @@ void TileMap::DrawCollisionOverlay(sf::RenderTarget& target, int index)
 
     const TileLayer& layer = layers[index];
     sf::RectangleShape collisionTile(sf::Vector2f(layerTileSize, layerTileSize));
-    collisionTile.setFillColor(sf::Color(255, 0, 0, 100)); // Red semi-transparent
+    collisionTile.setFillColor(sf::Color(255, 0, 0, 100)); // semi-transparent red
 
     for (int y = 0; y < layer.height; ++y) {
         for (int x = 0; x < layer.width; ++x) {
@@ -159,53 +171,63 @@ void TileMap::DrawCollisionOverlay(sf::RenderTarget& target, int index)
 }
 
 // -------------------------------- SELECTION FUNCTIONS --------------------------------
-void TileMap::HandleSelection(sf::Vector2f mousePos, bool isSelecting, float deltaTime) 
+
+void TileMap::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
+    float deltaTime)
 {
-    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset) / layerScaleFactor;
+    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset)
+        / layerScaleFactor;
+
     sf::Vector2i gridPos(
-        static_cast<int>(adjustedMousePos.x / editor.baseTileSize) * editor.baseTileSize,
-        static_cast<int>(adjustedMousePos.y / editor.baseTileSize) * editor.baseTileSize
+        static_cast<int>(adjustedMousePos.x / editor.baseTileSize)
+        * editor.baseTileSize,
+        static_cast<int>(adjustedMousePos.y / editor.baseTileSize)
+        * editor.baseTileSize
     );
 
     if (isSelecting) {
         if (!this->isSelecting) {
             this->isSelecting = true;
-            selectionStartIndices = gridPos; // Store the starting grid position
+            selectionStartIndices = gridPos; // store the starting grid position
         }
-        selectionEndIndices = gridPos; // Continuously update the end position
+        selectionEndIndices = gridPos; // continuously update the end position
     }
     else {
         if (this->isSelecting) {
             this->isSelecting = false;
 
-            // Get selection bounds and store in currentSelection
+            // get selection bounds and store in currentSelection
             sf::IntRect bounds = GetSelectionBounds();
             currentSelection.selectionBounds = bounds;
 
-            // Clear previous selection
+            // clear previous selection
             currentSelection.tiles.clear();
 
-            // Access the active layer
+            // access the active layer
             if (activeLayerIndex >= 0 && activeLayerIndex < layers.size()) {
                 TileLayer& currentLayer = layers[activeLayerIndex];
 
-                // Compute starting tile indices (in grid units)
+                // compute starting tile indices (in grid units)
                 int startTileX = selectionStartIndices.x / editor.baseTileSize;
                 int startTileY = selectionStartIndices.y / editor.baseTileSize;
 
-                // Iterate over the selected grid area (tile indices)
-                for (int ty = bounds.top / editor.baseTileSize; ty < (bounds.top + bounds.height) / editor.baseTileSize; ++ty) {
-                    for (int tx = bounds.left / editor.baseTileSize; tx < (bounds.left + bounds.width) / editor.baseTileSize; ++tx) {
-                        // Ensure the coordinates are within the layer bounds
-                        if (tx >= 0 && tx < currentLayer.width && ty >= 0 && ty < currentLayer.height) {
+                // iterate over the selected grid area (tile indices)
+                for (int ty = bounds.top / editor.baseTileSize; ty < (bounds.top 
+                    + bounds.height) / editor.baseTileSize; ++ty) {
+                    for (int tx = bounds.left / editor.baseTileSize; tx < (bounds.left
+                        + bounds.width) / editor.baseTileSize; ++tx) {
+                        // ensure the coordinates are within the layer bounds
+                        if (tx >= 0 && tx < currentLayer.width && ty >= 0 
+                            && ty < currentLayer.height) {
                             const Tile& tile = currentLayer.layer[ty][tx];
 
-                            // Only add valid tiles (non-empty)
+                            // only add valid tiles (non-empty)
                             if (tile.index >= 0) {
                                 SelectedTileData data;
                                 data.textureRect = tile.sprite.getTextureRect();
-                                // Calculate offset relative to selection start
-                                data.offset = sf::Vector2i(tx - startTileX, ty - startTileY);
+                                // calculate offset relative to selection start
+                                data.offset = sf::Vector2i(tx - startTileX, 
+                                    ty - startTileY);
                                 currentSelection.tiles.push_back(data);
                             }
                         }
@@ -221,22 +243,26 @@ sf::IntRect TileMap::GetSelectionBounds() const
 {
     int left = std::min(selectionStartIndices.x, selectionEndIndices.x);
     int top = std::min(selectionStartIndices.y, selectionEndIndices.y);
-    int right = std::max(selectionStartIndices.x, selectionEndIndices.x) + editor.baseTileSize;
-    int bottom = std::max(selectionStartIndices.y, selectionEndIndices.y) + editor.baseTileSize;
+    int right = std::max(selectionStartIndices.x, selectionEndIndices.x)
+        + editor.baseTileSize;
+    int bottom = std::max(selectionStartIndices.y, selectionEndIndices.y)
+        + editor.baseTileSize;
     return sf::IntRect(left, top, right - left, bottom - top);
 }
 
 void TileMap::DrawDragSelection(sf::RenderTarget& target) 
 {
-    // when isSelecting is passed in as true to handle selection, draw a selection box based on the calculated bounds
+    // when isSelecting is true, draw selection box
     if (isSelecting) {
-        sf::IntRect bounds = GetSelectionBounds();  // get the bounds of the selection rectangle based on the start and end selection indices
-        // bounds left and top are scaled with atlasScaleFactor to reflect the zoom level, the atlasViewOffset is then subtracted to ensure alignment with a zoomed and panned grid
+        // get the bounds of selection rectangle based on selection indices
+        sf::IntRect bounds = GetSelectionBounds();  
+        // bounds left/top are scaled with atlasScaleFactor to reflect the zoom level,
+        // the atlasViewOffset is then subtracted to align with a zoomed/panned grid
         sf::Vector2f adjustedPosition(
             (bounds.left * editor.layerScaleFactor) - editor.layerViewOffset.x,
             (bounds.top * editor.layerScaleFactor) - editor.layerViewOffset.y
         );
-        // bounds width and height are also scaled with atlasScaleFactor to reflect the zoom level
+        // bounds width/height are scaled with atlasScaleFactor to reflect zoom level
         sf::Vector2f adjustedSize(
             bounds.width * editor.layerScaleFactor,
             bounds.height * editor.layerScaleFactor
@@ -260,7 +286,7 @@ void TileMap::SetCurrentLayer(int index)
     }
 }
 
-void TileMap::HandlePanning(sf::Vector2f mousePos, bool isPanning, float deltaTime) 
+void TileMap::HandlePanning(sf::Vector2f mousePos, bool isPanning, float deltaTime)
 {
     static sf::Vector2f lastMousePos;
     if (isPanning) {
@@ -273,7 +299,8 @@ void TileMap::HandlePanning(sf::Vector2f mousePos, bool isPanning, float deltaTi
         lastMousePos = mousePos;    // update last mouse position each frame
     }
     else {
-        lastMousePos = sf::Vector2f(0, 0);  // keep it at the current mouse position when panning stops
+        // keep it at the current mouse position when panning stops
+        lastMousePos = sf::Vector2f(0, 0); 
     }
 }
 
@@ -297,152 +324,36 @@ void TileMap::UpdateTileScale(float scaleFactor)
 
 void TileMap::MergeAllLayers(sf::RenderTarget& target, bool showMergedLayers) 
 {
-    if (!showMergedLayers) return;  // if showMergedLayers was passed in as false, exit early
+    // if showMergedLayers was passed in as false, exit early
+    if (!showMergedLayers) return;  
     sf::Vector2f offset = editor.layerViewOffset;   // get the offset from panning
-    for (int i = 0; i < layers.size(); ++i) {   // loop through the layers vector drawing each layer with half opacity
-        if (i == activeLayerIndex) continue;    // when the loop reaches the active layer, skip it as its already drawn
-        const TileLayer& layer = layers[i]; // set layer variable to the current layer index the loop is at
-        // if (!layer.isVisible) continue; // skip invisible layers
-        // loop through the width and height of each current layer index drawing its' sprite tiles at half opacity
+    // loop through layers drawing them at 0.5 opacity
+    for (int i = 0; i < layers.size(); ++i) {
+        // when the loop reaches the active layer, skip it as its already drawn
+        if (i == activeLayerIndex) continue;    
+        // set layer variable to the current layer index the loop is at
+        const TileLayer& layer = layers[i];
+        // skip invisible layers
+        // if (!layer.isVisible) continue; 
+        // loop through the width/height of current layer drawing tiles at 0.5 opacity
         for (int y = 0; y < layer.height; ++y) {
             for (int x = 0; x < layer.width; ++x) {
-                const Tile& tile = layer.layer[y][x];   // get the tile at each width & height position from the current layer
-                if (tile.index >= 0) {  // only draw valid tiles 
-                    sf::Sprite tileSprite = tile.sprite;    // copy the tile sprite at this width and height of the layer being looped through
-                    tileSprite.setColor(sf::Color(255, 255, 255, 100)); // set the sprite to half opacity
+                const Tile& tile = layer.layer[y][x];
+                // only draw valid tiles 
+                if (tile.index >= 0) {
+                    // copy the tile at this width/height of the current layer
+                    sf::Sprite tileSprite = tile.sprite;
+                    // set the tile sprite to 0.5 opacity
+                    tileSprite.setColor(sf::Color(255, 255, 255, 100)); 
                     tileSprite.setPosition(
                         (x * layerTileSize) - offset.x,
                         (y * layerTileSize) - offset.y
-                    );  // adjust the tile position relative to the offset
-                    tileSprite.setScale(layerScaleFactor, layerScaleFactor);    // make sure it scales to the active layer's size if its' been zoomed
+                    );  
+                    // make sure it scales to the active layer's size if its' been zoomed
+                    tileSprite.setScale(layerScaleFactor, layerScaleFactor);    
                     target.draw(tileSprite);
                 }
             }
         }
     }
-}
-
-/*  object flow for saving and loading map data from files:
-    tileData = object that holds an individual tiles properties like position, index etc.
-    row = object that holds a full row of tileData objects
-    tiles = object that holds multiple row objects that make up a full layer
-    layerData = object that holds all data about a layer like dimensions, opacity, tiles etc.
-    mapData = object that holds every layer
-    tileData->row->tiles->layerData["tiles"]->mapData["layers"]
-*/
-
-bool TileMap::SaveTileMap(const std::string& filename) const 
-{
-    nlohmann::json mapData; // initialize json object to store the overall map data which consists of every layer (and their individual data)
-    for (const auto& layer : layers) {  // iterate over all TileLayer objects (layer) in the layers vector
-        nlohmann::json layerData;   // for each layer, a new json object called layerData is initialized to hold its data (dimensions, visiblity, opacity)
-        layerData["width"] = layer.width;
-        layerData["height"] = layer.height;
-        layerData["isVisible"] = layer.isVisible;
-        layerData["opacity"] = layer.opacity;
-        // initialize json object to store rows of tiles from each layer
-        nlohmann::json tiles;
-        // for each row (y) in the layer, iterate through each tile (x) and construct a json representation for it
-        for (int y = 0; y < layer.height; ++y) {
-            nlohmann::json row; // initialize json object to store all tiles (tileData) that make up a row
-            for (int x = 0; x < layer.width; ++x) {
-                const Tile& tile = layer.layer[y][x];
-                if (tile.index >= 0) {  // if the tile at layer[y][x] isn't empty, capture its properties and store in tileData json object
-                    nlohmann::json tileData;
-                    tileData["index"] = tile.index;
-                    tileData["textureRect"] = {
-                        {"left", tile.sprite.getTextureRect().left},
-                        {"top", tile.sprite.getTextureRect().top},
-                        {"width", tile.sprite.getTextureRect().width},
-                        {"height", tile.sprite.getTextureRect().height}
-                    };
-                    tileData["position"] = {
-                        {"x", tile.sprite.getPosition().x},
-                        {"y", tile.sprite.getPosition().y}
-                    };
-                    row.push_back(tileData);    // push each the serialized tile into the row object
-                }
-                else {
-                    row.push_back(nullptr); // else if the tile at layer[y][x] was empty, push back a nullptr to represent an empty tile
-                }
-            }
-            tiles.push_back(row);   // push the entire row into the tiles object which holds all the tiles in a layer
-        }
-        layerData["tiles"] = tiles; // add the serialized tile data (tiles) into layerData["tiles"] array
-        // serialize the collision grid data for each layer
-        nlohmann::json collisionGridData;
-        for (int y = 0; y < layer.height; ++y) {
-            nlohmann::json row;
-            for (int x = 0; x < layer.width; ++x) {
-                row.push_back(layer.collisionGrid[y][x]); // add collision state
-            }
-            collisionGridData.push_back(row);
-        }
-        layerData["collisionGrid"] = collisionGridData;
-        mapData["layers"].push_back(layerData); // then push all of this layer iterations data (layerData) into the mapData["layers"] array
-    }
-    // write the json data to a file which will be named whatever was typed during the ui interaction
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file for saving: " << filename << "\n";
-        return false;
-    }
-    file << mapData.dump(4); // pretty-print json with 4 space indentation for readability 
-    return true;    // return true if saving succeeded
-}
-
-bool TileMap::LoadTileMap(const std::string& filename)
-{
-    nlohmann::json mapData; // initialize a mapData object which will hold each l
-    // open the file specified during the ui interaction
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file for loading: " << filename << "\n";
-        return false;
-    }
-    file >> mapData;    // parse the specified files contents into the mapData object
-    layers.clear(); // clear any existing layers so there are no random layers visible when this map is loaded
-    // iterate over each layer stored in the mapData["layers"] array
-    for (const auto& layerData : mapData["layers"]) {
-        TileLayer newLayer; // create new TileLayer object for each layer (which will be loaded and re-drawn) and populate it with the deserialized data
-        newLayer.width = layerData["width"];
-        newLayer.height = layerData["height"];
-        newLayer.isVisible = layerData["isVisible"];
-        newLayer.opacity = layerData["opacity"];
-        newLayer.index = layers.size(); // set this new layer's index to match it's original index in the layers vector
-        newLayer.layer.resize(newLayer.height, std::vector<Tile>(newLayer.width));  // resize the new layer grid (newLayer.layer) to its width and height
-        // iterate through the "tiles" array from layerData and deserialize each tile
-        const auto& tiles = layerData["tiles"];
-        for (int y = 0; y < newLayer.height; ++y) {
-            for (int x = 0; x < newLayer.width; ++x) {
-                if (tiles[y][x].is_null()) continue; // skip empty tiles
-                const auto& tileData = tiles[y][x]; // set the tileData for the [y][x] tile from the "tiles" array
-                Tile& tile = newLayer.layer[y][x];  // create Tile struct object to hold the [y][x] tile from newLayer.layer (which is the new TileLayer struct's grid of tiles)
-                // set the Tile struct object's attributes based on the deserialized json
-                tile.index = tileData["index"];
-                tile.sprite.setTexture(tileAtlas.GetTexture());
-                tile.sprite.setTextureRect(sf::IntRect(
-                    tileData["textureRect"]["left"],
-                    tileData["textureRect"]["top"],
-                    tileData["textureRect"]["width"],
-                    tileData["textureRect"]["height"]
-                ));
-                tile.sprite.setPosition(
-                    tileData["position"]["x"],
-                    tileData["position"]["y"]
-                );
-                tile.sprite.setScale(layerScaleFactor, layerScaleFactor);
-            }
-        }
-        newLayer.collisionGrid.resize(newLayer.height, std::vector<bool>(newLayer.width, false));
-        const auto& collisionGridData = layerData["collisionGrid"];
-        for (int y = 0; y < newLayer.height; ++y) {
-            for (int x = 0; x < newLayer.width; ++x) {
-                newLayer.collisionGrid[y][x] = collisionGridData[y][x];
-            }
-        }
-        layers.push_back(newLayer); // push the new layer back into the vector of layers each iteration
-    }
-    activeLayerIndex = layers.empty() ? -1 : 0; // reset active layer
-    return true;    // return true if loading succeeded
 }

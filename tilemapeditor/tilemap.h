@@ -33,7 +33,7 @@ private:
 		// 2D grid of tiles makes up an entire layer
 		std::vector<std::vector<Tile>> layer;
 		// ?????????????????????????????????????????
-		std::set<sf::Vector2i> selectedTiles;
+		// std::set<sf::Vector2i> selectedTiles;
 		// collision grid for a specific layer
 		std::vector<std::vector<bool>> collisionGrid;	
 	};
@@ -49,11 +49,10 @@ public:
 	};
 
 	struct SelectedTile {
-		int index = -1;							// index in the atlas
-		// now stores each selected tile’s textureRect and relative offset
+		int index = -1;						// index in the atlas
 		std::vector<SelectedTileData> tiles;	
-		sf::IntRect selectionBounds;			// drag selected area bounds
-		sf::Sprite sprite;						// sprite created from texture and texture rect
+		sf::IntRect selectionBounds;		// drag selected area bounds
+		sf::Sprite sprite;					// sprite created from texture and texture rect
 	};
 private:
 	std::vector<TileLayer> layers;	// vector to hold multiple layers
@@ -62,11 +61,14 @@ private:
 	float layerScaleFactor = 1.0f;	// default scale factor for zooming
 
 public:
-	// public variables
-	SelectedTile currentSelection;		// shared selection for both atlas and layer
-	bool showMergedLayers = false;		// bool to decide whether to display merged layers or not
-	bool showCollisionOverlay = false;	// bool to decide whether to display the collision overlay or not
-	// main tileMap functions
+	// shared selection for both atlas and layer
+	SelectedTile currentSelection;		
+	// bool to decide whether to display merged layers or not
+	bool showMergedLayers = false;	
+	// bool to decide whether to display the collision overlay or not
+	bool showCollisionOverlay = false;	
+
+	// main TileMap functions
 	TileMap(Editor& editor, TileAtlas& tileAtlas);
 	void Initialize(int width, int height);
 	void DrawLayerGrid(sf::RenderTarget& target, int index);

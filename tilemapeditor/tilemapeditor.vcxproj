@@ -31,6 +31,7 @@
     <ClInclude Include="tilemap.h" />
     <ClInclude Include="tileatlas.h" />
     <ClInclude Include="ui.h" />
+    <ClInclude Include="utility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
