@@ -1,5 +1,5 @@
-#ifndef LAYER_H
-#define LAYER_H
+#ifndef TILEMAP_H
+#define TILEMAP_H
 
 #include <SFML/Graphics.hpp>
 #include <set>
@@ -32,8 +32,6 @@ private:
 
 		// 2D grid of tiles makes up an entire layer
 		std::vector<std::vector<Tile>> layer;
-		// ?????????????????????????????????????????
-		// std::set<sf::Vector2i> selectedTiles;
 		// collision grid for a specific layer
 		std::vector<std::vector<bool>> collisionGrid;	
 	};
@@ -96,4 +94,4 @@ public:
 	int GetCurrentLayerIndex() { return activeLayerIndex; }
 	std::vector<TileLayer>& GetLayers() { return layers; }
 };
-#endif
+#endif // !TILEMAP_H

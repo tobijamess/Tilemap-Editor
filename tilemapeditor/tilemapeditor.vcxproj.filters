@@ -30,6 +30,9 @@
     <ClCompile Include="tileatlas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="viewinitialization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tilemap.h">
@@ -48,6 +51,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tilemapserializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="viewinitialization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

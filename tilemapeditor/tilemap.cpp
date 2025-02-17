@@ -1,6 +1,8 @@
 #include "tilemap.h"
 #include "editor.h"
 #include "tileatlas.h"
+#include "utility.h"
+#include "tilemapserializer.h"
 
 TileMap::TileMap(Editor& editor, TileAtlas& tileAtlas) 
     : editor(editor), tileAtlas(tileAtlas) {}
@@ -54,10 +56,11 @@ void TileMap::HandleTilePlacement(const sf::Vector2f& mousePos)
     if (currentSelection.tiles.empty()) return;
 
     // convert mouse position to grid coordinates (accounting for zoom/panning)
-    sf::Vector2f adjustedMousePos = (mousePos + editor.layerViewOffset)
-        / layerScaleFactor;
-    int gridX = static_cast<int>(adjustedMousePos.x / editor.baseTileSize);
-    int gridY = static_cast<int>(adjustedMousePos.y / editor.baseTileSize);
+// convert mouse position to grid coordinates (accounting for zoom/panning)
+    sf::Vector2i snappedPos = Utility::SnapToGrid(mousePos, editor.layerViewOffset,
+        editor.layerScaleFactor, editor.baseTileSize);
+    int gridX = snappedPos.x / editor.baseTileSize;
+    int gridY = snappedPos.y / editor.baseTileSize;
 
     // iterate through each selected tile
     for (const auto& tileData : currentSelection.tiles) {
@@ -72,6 +75,7 @@ void TileMap::HandleTilePlacement(const sf::Vector2f& mousePos)
         AddTile(tileAtlas.GetTexture(), tileData.textureRect, currentSelection.index,
             targetX, targetY);
     }
+
 }
 
 void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)

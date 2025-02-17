@@ -62,46 +62,68 @@ void UI::DrawUI(sf::RenderWindow& window)
 {
     // populate the buttons vector if empty 
     if (buttons.empty()) {
-        // define the properties of the UI buttons
-        sf::Vector2f buttonSize(200, 25); // button dimensions
-        float buttonSpacing = 5.f;  // spacing between buttons
+        sf::Vector2f buttonSize(200.f, 25.f);   // button dimensions
+        float buttonSpacing = 5.f;          // spacing between buttons
+        float separatorGap = 5.f;           // spacing between separators
         // starting x, y position of buttons relative to the viewport
-        float startX = 5.f;
-        float startY = 5.f;
+        float leftX = 5.f;
+        float rightX = leftX + buttonSize.x + separatorGap;
+        float leftY = 5.f;
+        float rightY = 5.f;
+
         // define the buttons labels
-        std::vector<std::string> buttonLabels = {
+        std::vector<std::string> leftButtons = {
             "50x50 Grid",
             "100x100 Grid",
             "200x200 Grid",
             "Merge Layers",
-            "Toggle Collision",
+            "Toggle Collision"
+        };
+        std::vector<std::string> rightButtons = {
             "Save Tilemap",
             "Load Tilemap"
         };
+
         // iterate through the button labels vector and create buttons
-        for (size_t i = 0; i < buttonLabels.size(); ++i) {
+        for (const auto &label : leftButtons) {
             // create and position the buttons with the properties defined above
             Button button;
             button.shape.setSize(buttonSize);
             button.shape.setFillColor(sf::Color(150, 150, 150));
-            button.shape.setPosition(startX, startY + i * (buttonSize.y
-                + buttonSpacing));
+            button.shape.setPosition(leftX, leftY);
             // set the properties of the button label
             button.label.setFont(font);
-            button.label.setString(buttonLabels[i]);
-            button.label.setCharacterSize(18);
+            button.label.setString(label);
+            button.label.setCharacterSize(16);
             button.label.setFillColor(sf::Color::Black);
             // center the label on the button
             sf::FloatRect textBounds = button.label.getLocalBounds();
             button.label.setPosition(
-                button.shape.getPosition().x + (buttonSize.x - textBounds.width)
-                / 2.f - textBounds.left,
-                button.shape.getPosition().y + (buttonSize.y - textBounds.height)
-                / 2.f - textBounds.top
+                leftX + (buttonSize.x - textBounds.width) / 2.f - textBounds.left,
+                leftY + (buttonSize.y - textBounds.height) / 2.f - textBounds.top
             );
             // store the button in the ui buttons vector
             buttons.push_back(button);
+            leftY += buttonSize.y + buttonSpacing;
         }
+
+        for (const auto &label : rightButtons) { 
+            Button button; 
+            button.shape.setSize(buttonSize); 
+            button.shape.setFillColor(sf::Color(150, 150, 150)); 
+            button.shape.setPosition(rightX, rightY); 
+            button.label.setFont(font); 
+            button.label.setString(label); 
+            button.label.setCharacterSize(16); 
+            button.label.setFillColor(sf::Color::Black); 
+            // center the label 
+            sf::FloatRect textBounds = button.label.getLocalBounds(); 
+            button.label.setPosition(rightX + (buttonSize.x - textBounds.width)
+                / 2.f - textBounds.left, rightY + (buttonSize.y - textBounds.height)
+                / 2.f - textBounds.top 
+            ); 
+            buttons.push_back(button); 
+            rightY += buttonSize.y + buttonSpacing; }
     }
     for (const auto& button : buttons) {
         // draw the button and its label
@@ -115,9 +137,9 @@ void UI::ActivateTextInput()
     isTextInputActive = true;
     inputText.clear();
     // set up input box
-    inputBox.setSize(sf::Vector2f(300.f, 50.f));
+    inputBox.setSize(sf::Vector2f(200.f, 50.f));
     inputBox.setFillColor(sf::Color(200, 200, 200));
-    inputBox.setPosition(240.f, 5.f);
+    inputBox.setPosition(415.f, 5.f);
     // set up input text display
     inputTextDisplay.setFont(font);
     inputTextDisplay.setCharacterSize(20);

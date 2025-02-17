@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include "viewinitialization.h"
 
 class TileAtlas;
 class TileMap;
@@ -12,6 +13,7 @@ class Editor {
 private:
     // main window to render and draw to
     sf::RenderWindow window;
+    sf::ContextSettings settings;
 
     // separate views to split up interaction and rendering
     sf::View uiView;
@@ -29,9 +31,9 @@ private:
     float inputDelay = 0.05f;
 
     // use pointer to these classes to avoid circular dependencies
-    UI* ui;
-    TileMap* tileMap;
-    TileAtlas* tileAtlas;
+    std::shared_ptr<UI> ui;
+    std::shared_ptr<TileMap> tileMap;
+    std::shared_ptr<TileAtlas> tileAtlas;
 
 public:
     // variables to track zooming
@@ -71,17 +73,12 @@ public:
     // bounds getter function for views
     sf::FloatRect GetViewportBounds(const sf::View& view,
         const sf::RenderWindow& window);
-    
-    // clamp function
-    float clamp(float value, float min, float max) {
-        return std::max(min, std::min(max, value));
-    }
 
     // getter functions
     sf::View GetUIView() const { return uiView; }
     sf::View GetAtlasView() const { return atlasView; }
     sf::View GetLayerView() const { return layerView; }
     const sf::RenderWindow& GetWindow() { return window; }
-    TileMap* GetTileMap() const { return tileMap; }
+    std::shared_ptr<TileMap> GetTileMap() const { return tileMap; }
 };
 #endif // !EDITOR_H

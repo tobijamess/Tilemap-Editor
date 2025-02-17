@@ -1,5 +1,6 @@
 #include "tileatlas.h"
 #include "editor.h"
+#include "utility.h"
 
 TileAtlas::TileAtlas(Editor& editor) : editor(editor) {}
 
@@ -18,16 +19,8 @@ void TileAtlas::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
     float deltaTime) 
 {
     // adjust mouse position by accounting for panning and zoom
-    sf::Vector2f adjustedMousePos = (mousePos + editor.atlasViewOffset)
-        / editor.atlasScaleFactor;
-
-    // snap to grid using the base tile size
-    sf::Vector2i texturePos(
-        static_cast<int>(adjustedMousePos.x / editor.baseTileSize)
-        * editor.baseTileSize,
-        static_cast<int>(adjustedMousePos.y / editor.baseTileSize)
-            * editor.baseTileSize
-    );
+    sf::Vector2i texturePos = Utility::SnapToGrid(mousePos, editor.atlasViewOffset,
+        editor.atlasScaleFactor, editor.baseTileSize);
 
     if (isSelecting) {
         if (!this->isSelecting) {
@@ -99,19 +92,20 @@ void TileAtlas::DrawAtlas(sf::RenderTarget& target)
     line.setFillColor(sf::Color(100, 100, 100, 150));
 
     // starting positions of horizontal and vertical gridlines based on the offset
-    float startX = -offset.x;
-    float startY = -offset.y;
+    // using round to prevent grid gaps when resizing
+    float startX = std::round(-offset.x);
+    float startY = std::round(-offset.y);
 
     // iterate from the starting offset up to the grids width and height and draw
     for (float x = startX; x <= gridWidth * atlasTileSize - offset.x; x += atlasTileSize) {
-        line.setSize(sf::Vector2f(1.f, gridHeight * atlasTileSize)); // height of the grid
+        line.setSize(sf::Vector2f(1.25f, gridHeight * atlasTileSize)); // height of the grid
         // position of each drawn line relative to panning offset
-        line.setPosition(x, -offset.y); 
+        line.setPosition(x, -offset.y);
         target.draw(line);
     }
     // same here but for horizontal grid lines
     for (float y = startY; y <= gridHeight * atlasTileSize - offset.y; y += atlasTileSize) {
-        line.setSize(sf::Vector2f(gridWidth * atlasTileSize, 1.f)); // width of the grid
+        line.setSize(sf::Vector2f(gridWidth * atlasTileSize, 1.25f)); // width of the grid
         line.setPosition(-offset.x, y);
         target.draw(line);
     }

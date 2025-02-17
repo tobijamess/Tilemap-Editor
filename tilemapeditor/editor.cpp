@@ -5,8 +5,10 @@
 
 // default editor constructor because editor is the core manager
 Editor::Editor()
-    : window(sf::VideoMode(1920, 1080), "Tile Editor")
+    : window(sf::VideoMode(1280, 720), "Tile Editor")
 {
+    settings.antialiasingLevel = 0;
+
     auto windowWidth = static_cast<float>(window.getSize().x);
     auto windowHeight = static_cast<float>(window.getSize().y);
 
@@ -14,54 +16,10 @@ Editor::Editor()
     float defaultZoomFactor = static_cast<float>(zoomLevels[currentZoomIndex])
         / zoomLevels[0];
 
-    // ui view initialization
-    float uiViewportWidth = 0.75f; // 75% of window width
-    float uiViewportHeight = 0.25f; // 25% of window height
-    uiView.setViewport(sf::FloatRect(0.25f, 0.75f, 0.75f, 0.25f));
-    float uiAspectRatio = (windowWidth * uiViewportWidth) 
-        / (windowHeight * uiViewportHeight);
-    uiView.setSize(windowWidth * uiViewportWidth, 
-        (windowWidth * uiViewportWidth) / uiAspectRatio);
-    uiView.setCenter(uiView.getSize() / 2.f); // center the view
-
-    // atlas view initialization
-    float atlasViewportWidth = 0.25f; // 25% of window width
-    float atlasViewportHeight = 1.f; // 100% of window height
-    atlasView.setViewport(sf::FloatRect(0.f, 0.f, 0.25f, 1.f));
-    float atlasAspectRatio = (windowWidth * atlasViewportWidth) / (
-        windowHeight * atlasViewportHeight);
-    atlasView.setSize(windowWidth * atlasViewportWidth, 
-        (windowWidth * atlasViewportWidth) / atlasAspectRatio);
-    atlasView.setCenter(atlasView.getSize() / 2.f);
-    // save the original view size for zoom functions
-    atlasOriginalViewSize = atlasView.getSize(); 
-
-    // layer view initialization
-    float layerViewportWidth = 0.75f; // 75% of window width
-    float layerViewportHeight = 0.75f; // 75% of window height
-    layerView.setViewport(sf::FloatRect(0.25f, 0.f, 0.75f, 0.75f));
-    // set as
-    float layerAspectRatio = (windowWidth * layerViewportWidth) 
-        / (windowHeight * layerViewportHeight);
-    layerView.setSize(windowWidth * layerViewportWidth, windowWidth
-        * layerViewportWidth / layerAspectRatio);
-    layerView.setCenter(layerView.getSize() / 2.f);
-    // save the original view size for zoom functions
-    layerOriginalViewSize = layerView.getSize();
-
-    // vertical separator between all 3 views
-    verticalSeparator.setSize(sf::Vector2f(2.0f, static_cast<float>(
-        window.getSize().y))); // 2px wide line
-    verticalSeparator.setFillColor(sf::Color::White);
-    verticalSeparator.setPosition(atlasView.getViewport().width
-        * window.getSize().x, 0.0f);
-
-    // horizontal separator between layer and UI views
-    horizontalSeparator.setSize(sf::Vector2f(static_cast<float>(
-        window.getSize().x), 2.0f)); // 2px tall line
-    horizontalSeparator.setFillColor(sf::Color::White);
-    horizontalSeparator.setPosition(atlasView.getViewport().width
-        * window.getSize().x, layerView.getViewport().height * window.getSize().y);
+    InitializeUIView(uiView, window);
+    InitializeAtlasView(atlasView, atlasOriginalViewSize, window);
+    InitializeLayerView(layerView, layerOriginalViewSize, window);
+    InitializeViewSeparators(verticalSeparator, horizontalSeparator, atlasView, layerView, window);
 
     // initialize classes and structs
     InitializeClass();
@@ -70,11 +28,11 @@ Editor::Editor()
 void Editor::InitializeClass() 
 {
     // create a new instance and pass a reference to the current Editor instance
-    ui = new UI(*this); 
+    ui = std::make_shared<UI>(*this); 
     ui->Initialize();   
-    tileAtlas = new TileAtlas(*this);
+    tileAtlas = std::make_shared<TileAtlas>(*this);
     tileAtlas->Initialize();
-    tileMap = new TileMap(*this, *tileAtlas);
+    tileMap = std::make_shared<TileMap>(*this, *tileAtlas);
     // no tileMap initialization because it gets created upon ui interaction
 }
 
@@ -99,13 +57,13 @@ void Editor::HandleEvents(float deltaTime)
     bool isMiddleMouseDragging = sf::Mouse::isButtonPressed(sf::Mouse::Middle);
 
     while (window.pollEvent(event)) {
-        // Global events
+        // global events
         if (event.type == sf::Event::Closed) {
             window.close();
         }
         ProcessKeyboardInputs();
 
-        // Get the mouse position in different view coordinate systems
+        // get the mouse position in different view coordinate systems
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         sf::Vector2f atlasMousePos = window.mapPixelToCoords(mousePos, atlasView);
         sf::Vector2f layerMousePos = window.mapPixelToCoords(mousePos, layerView);
@@ -175,7 +133,7 @@ void Editor::HandleAtlasEvents(const sf::Event& event,
             tileAtlas->HandlePanning(atlasMousePos, true, deltaTime);
     }
     else if (event.type == sf::Event::MouseWheelMoved) {
-        // Zoom in or out depending on wheel delta
+        // zoom in or out depending on wheel delta
         HandleAtlasZoom(atlasView, event.mouseWheel.delta, atlasOriginalViewSize);
     }
 }
@@ -282,7 +240,7 @@ void Editor::HandleAtlasZoom(sf::View& view, float delta,
 {
     // set new zoom index based on if scroll delta is positive or negative
     int newZoomIndex = currentZoomIndex + (delta < 0 ? -1 : 1); 
-    newZoomIndex = clamp(newZoomIndex, 0, static_cast<int>(zoomLevels.size()) - 1);
+    newZoomIndex = std::clamp(newZoomIndex, 0, static_cast<int>(zoomLevels.size()) - 1);
     if (newZoomIndex != currentZoomIndex) {
         currentZoomIndex = newZoomIndex;
         // scale relative to the base zoom level
@@ -296,7 +254,7 @@ void Editor::HandleLayerZoom(sf::View& view, float delta,
     const sf::Vector2f& originalSize) 
 {
     int newZoomIndex = currentZoomIndex + (delta < 0 ? -1 : 1);
-    newZoomIndex = clamp(newZoomIndex, 0, static_cast<int>(zoomLevels.size()) - 1);
+    newZoomIndex = std::clamp(newZoomIndex, 0, static_cast<int>(zoomLevels.size()) - 1);
     if (newZoomIndex != currentZoomIndex) {
         currentZoomIndex = newZoomIndex;
 
