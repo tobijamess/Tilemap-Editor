@@ -63,16 +63,18 @@ public:
 	SelectedTile currentSelection;		
 	// bool to decide whether to display merged layers or not
 	bool showMergedLayers = false;	
+	// bool to active eraser or not
+	bool eraserActive = false;
+	void ToggleEraserMode() { eraserActive = !eraserActive; }
 	// bool to decide whether to display the collision overlay or not
 	bool showCollisionOverlay = false;	
 
 	// main TileMap functions
 	TileMap(Editor& editor, TileAtlas& tileAtlas);
-	void Initialize(int width, int height);
 	void DrawLayerGrid(sf::RenderTarget& target, int index);
 	void SetCurrentLayer(int index);
 	void AddTile(const sf::Texture& texture, const sf::IntRect& rect, int index, int x, int y);
-	void RemoveTile(int x, int y);
+	void RemoveTile(const sf::Vector2f mousePos);
 	void HandleTilePlacement(const sf::Vector2f& mousePos);
 	void HandlePanning(sf::Vector2f mousePos, bool isPanning, float deltaTime);
 	void UpdateTileScale(float scaleFactor);

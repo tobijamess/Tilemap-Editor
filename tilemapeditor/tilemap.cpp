@@ -45,9 +45,31 @@ void TileMap::AddTile(const sf::Texture& texture, const sf::IntRect& rect,
     }
 }
 
-void TileMap::RemoveTile(int x, int y) 
+void TileMap::RemoveTile(const sf::Vector2f mousePos) 
 {
+    if (activeLayerIndex < 0 || activeLayerIndex >= layers.size()) {
+        return;
+    }
 
+    TileLayer& currentLayer = layers[activeLayerIndex];
+
+    sf::Vector2i snappedPos = Utility::SnapToGrid(mousePos, editor.layerViewOffset,
+        editor.layerScaleFactor, editor.baseTileSize);
+    int gridX = snappedPos.x / editor.baseTileSize;
+    int gridY = snappedPos.y / editor.baseTileSize;
+
+    if (gridX < 0 || gridX >= currentLayer.width || gridY < 0
+        || gridY >= currentLayer.height) {
+        return;
+    }
+
+    if (showCollisionOverlay) {
+        currentLayer.collisionGrid[gridY][gridX] = false;
+    }
+    else {
+        currentLayer.layer[gridY][gridX].index = -1;
+        currentLayer.layer[gridY][gridX].sprite = sf::Sprite();
+    }
 }
 
 void TileMap::HandleTilePlacement(const sf::Vector2f& mousePos)

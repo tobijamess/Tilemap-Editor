@@ -144,7 +144,9 @@ void Editor::HandleLayerEvents(const sf::Event& event,
 {
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
-            if (!tileMap->showCollisionOverlay)
+            if (tileMap->eraserActive)
+                tileMap->RemoveTile(layerMousePos);
+            else if (!tileMap->showCollisionOverlay)
                 tileMap->HandleTilePlacement(layerMousePos);
             else
                 tileMap->HandleCollisionPlacement(layerMousePos, true);
@@ -164,7 +166,9 @@ void Editor::HandleLayerEvents(const sf::Event& event,
     }
     else if (event.type == sf::Event::MouseMoved) {
         if (isLeftDragging) {
-            if (!tileMap->showCollisionOverlay)
+            if (tileMap->eraserActive)
+            tileMap->RemoveTile(layerMousePos);
+            else if (!tileMap->showCollisionOverlay)
                 tileMap->HandleTilePlacement(layerMousePos);
             else
                 tileMap->HandleCollisionPlacement(layerMousePos, true);

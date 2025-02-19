@@ -46,6 +46,9 @@ void UI::HandleInteraction(const sf::Vector2f& mousePos,
                 editor.GetTileMap()->MergeAllLayers(window,
                     editor.GetTileMap()->showMergedLayers); 
             }
+            else if (label == "Eraser") {
+                editor.GetTileMap()->ToggleEraserMode();
+            }
             else if (label == "Toggle Collision") {
                 editor.GetTileMap()->showCollisionOverlay
                     = !editor.GetTileMap()->showCollisionOverlay;
@@ -76,12 +79,13 @@ void UI::DrawUI(sf::RenderWindow& window)
             "50x50 Grid",
             "100x100 Grid",
             "200x200 Grid",
-            "Merge Layers",
+            "Eraser",
             "Toggle Collision"
         };
         std::vector<std::string> rightButtons = {
             "Save Tilemap",
-            "Load Tilemap"
+            "Load Tilemap",
+            "Merge Layers"
         };
 
         // iterate through the button labels vector and create buttons
