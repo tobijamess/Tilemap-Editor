@@ -19,6 +19,7 @@ private:
     sf::View uiView;
     sf::View layerView;
     sf::View atlasView;
+    sf::View separatorView;
 
     // store original view size so it isn't overwritten and replaced when zooming
     sf::Vector2f atlasOriginalViewSize;
@@ -54,6 +55,7 @@ public:
     void Render(sf::RenderWindow& window);
     
     // main event handling and input processing
+    void HandleResize(const sf::Event& event);
     void HandleEvents(float deltaTime);
     void ProcessKeyboardInputs();
 

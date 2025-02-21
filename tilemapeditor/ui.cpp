@@ -136,6 +136,10 @@ void UI::DrawUI(sf::RenderWindow& window)
     }
 }
 
+void UI::ResetButtons() {
+    buttons.clear();
+}
+
 void UI::ActivateTextInput() 
 {
     isTextInputActive = true;

@@ -26,6 +26,7 @@ public:
     UI(Editor& editor);
     bool Initialize();
     void HandleInteraction(const sf::Vector2f& mousePos, sf::RenderWindow& window);
+    void ResetButtons();
     void ActivateTextInput();
     void HandleTextInput(const sf::Event& event);
     void DrawTextInput(sf::RenderWindow& window);

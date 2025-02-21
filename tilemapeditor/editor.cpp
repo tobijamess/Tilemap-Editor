@@ -19,7 +19,8 @@ Editor::Editor()
     InitializeUIView(uiView, window);
     InitializeAtlasView(atlasView, atlasOriginalViewSize, window);
     InitializeLayerView(layerView, layerOriginalViewSize, window);
-    InitializeViewSeparators(verticalSeparator, horizontalSeparator, atlasView, layerView, window);
+    InitializeSeparatorView(separatorView, verticalSeparator,
+        horizontalSeparator, window, atlasView, layerView);
 
     // initialize classes and structs
     InitializeClass();
@@ -47,6 +48,26 @@ void Editor::Run()
     }
 }
 
+void Editor::HandleResize(const sf::Event& event) {
+    // create event sizes vector to prevent conversion from event to vector2u errors
+    sf::Vector2u newSize(event.size.width, event.size.height);
+
+    // update the main window view to the new size
+    sf::FloatRect visibleArea(0, 0, newSize.x, newSize.y);
+    window.setView(sf::View(visibleArea));
+
+    // reinitialize views with the updated window dimensions
+    InitializeUIView(uiView, window);
+    InitializeAtlasView(atlasView, atlasOriginalViewSize, window);
+    InitializeLayerView(layerView, layerOriginalViewSize, window);
+    InitializeSeparatorView(separatorView, verticalSeparator,
+        horizontalSeparator, window, atlasView, layerView);
+
+    // reset the UI layout so buttons are recreated in their new positions
+    ui->ResetButtons();
+}
+
+
 void Editor::HandleEvents(float deltaTime) 
 {
     sf::Event event;
@@ -61,6 +82,11 @@ void Editor::HandleEvents(float deltaTime)
         if (event.type == sf::Event::Closed) {
             window.close();
         }
+        else if (event.type == sf::Event::Resized) {
+            HandleResize(event);
+            continue;
+        }
+
         ProcessKeyboardInputs();
 
         // get the mouse position in different view coordinate systems
@@ -217,8 +243,8 @@ void Editor::Render(sf::RenderWindow& window)
     tileAtlas->DrawAtlas(window);
     tileAtlas->DrawDragSelection(window);
 
-    // reset to default view for separators
-    window.setView(window.getDefaultView());
+    // separator rendering
+    window.setView(separatorView);
     window.draw(verticalSeparator);
     window.draw(horizontalSeparator);
 
