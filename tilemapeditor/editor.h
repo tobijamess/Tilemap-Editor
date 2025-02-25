@@ -53,7 +53,7 @@ public:
     void InitializeClass();
     void Run();
     void Render(sf::RenderWindow& window);
-    
+
     // main event handling and input processing
     void HandleResize(const sf::Event& event);
     void HandleEvents(float deltaTime);

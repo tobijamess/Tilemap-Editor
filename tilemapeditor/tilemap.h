@@ -12,7 +12,7 @@ struct TileAtlas;
 class TileMap {
 private:
 	// reference to Editor and TileAtlas to avoid circular dependency
-	Editor& editor;			
+	Editor& editor;
 	TileAtlas& tileAtlas;
 
 	struct Tile {
@@ -33,7 +33,7 @@ private:
 		// 2D grid of tiles makes up an entire layer
 		std::vector<std::vector<Tile>> layer;
 		// collision grid for a specific layer
-		std::vector<std::vector<bool>> collisionGrid;	
+		std::vector<std::vector<bool>> collisionGrid;
 	};
 
 	bool isSelecting = false;
@@ -48,7 +48,7 @@ public:
 
 	struct SelectedTile {
 		int index = -1;						// index in the atlas
-		std::vector<SelectedTileData> tiles;	
+		std::vector<SelectedTileData> tiles;
 		sf::IntRect selectionBounds;		// drag selected area bounds
 		sf::Sprite sprite;					// sprite created from texture and texture rect
 	};
@@ -60,14 +60,14 @@ private:
 
 public:
 	// shared selection for both atlas and layer
-	SelectedTile currentSelection;		
+	SelectedTile currentSelection;
 	// bool to decide whether to display merged layers or not
-	bool showMergedLayers = false;	
+	bool showMergedLayers = false;
 	// bool to active eraser or not
 	bool eraserActive = false;
 	void ToggleEraserMode() { eraserActive = !eraserActive; }
 	// bool to decide whether to display the collision overlay or not
-	bool showCollisionOverlay = false;	
+	bool showCollisionOverlay = false;
 
 	// main TileMap functions
 	TileMap(Editor& editor, TileAtlas& tileAtlas);

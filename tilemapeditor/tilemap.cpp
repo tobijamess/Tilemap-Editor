@@ -4,12 +4,12 @@
 #include "utility.h"
 #include "tilemapserializer.h"
 
-TileMap::TileMap(Editor& editor, TileAtlas& tileAtlas) 
+TileMap::TileMap(Editor& editor, TileAtlas& tileAtlas)
     : editor(editor), tileAtlas(tileAtlas) {}
 
 // -------------------------------- TILE LAYER FUNCTIONS --------------------------------
 
-void TileMap::AddLayer(int width, int height) 
+void TileMap::AddLayer(int width, int height)
 {
     // create a new TileLayer instance and set passed in properties
     TileLayer newLayer;
@@ -27,7 +27,7 @@ void TileMap::AddLayer(int width, int height)
 }
 
 void TileMap::AddTile(const sf::Texture& texture, const sf::IntRect& rect,
-    int index, int x, int y) 
+    int index, int x, int y)
 {
     if (activeLayerIndex < 0 || activeLayerIndex >= layers.size()) return;
 
@@ -39,13 +39,13 @@ void TileMap::AddTile(const sf::Texture& texture, const sf::IntRect& rect,
         tile.sprite.setTexture(texture);
         tile.sprite.setTextureRect(rect);
         // apply scale factor to the layer tiles
-        tile.sprite.setScale(layerScaleFactor, layerScaleFactor); 
+        tile.sprite.setScale(layerScaleFactor, layerScaleFactor);
         // apply position based on the tile size
-        tile.sprite.setPosition(x * layerTileSize, y * layerTileSize);  
+        tile.sprite.setPosition(x * layerTileSize, y * layerTileSize);
     }
 }
 
-void TileMap::RemoveTile(const sf::Vector2f mousePos) 
+void TileMap::RemoveTile(const sf::Vector2f mousePos)
 {
     if (activeLayerIndex < 0 || activeLayerIndex >= layers.size()) {
         return;
@@ -103,7 +103,7 @@ void TileMap::HandleTilePlacement(const sf::Vector2f& mousePos)
 void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)
 {
     // don't try to draw a non-existant layer to the window
-    if (index < 0 || index >= layers.size()) {  
+    if (index < 0 || index >= layers.size()) {
         std::cerr << "Invalid layer index for rendering: " << index << "\n";
         return;
     }
@@ -111,7 +111,7 @@ void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)
     // get the offset of the layer view that is updated when panning
     sf::Vector2f offset = editor.layerViewOffset;
     // get the active TileLayer instance from the layers vector
-    const TileLayer& layer = layers[index]; 
+    const TileLayer& layer = layers[index];
 
     // each tiles position is calculated based on its coordinates in the grid
     // (x * layerTileSize, y * layerTileSize)
@@ -122,7 +122,7 @@ void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)
             const Tile& tile = layer.layer[y][x];
             // if tile exists, retrieve it from the Tile struct, set position and draw it
             if (tile.index >= 0) {
-                sf::Sprite tileSprite = tile.sprite;      
+                sf::Sprite tileSprite = tile.sprite;
                 tileSprite.setColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(
                     layer.opacity * 255)));
                 // adjust position relative to panning offset
@@ -132,27 +132,28 @@ void TileMap::DrawLayerGrid(sf::RenderTarget& target, int index)
         }
     }
 
-    // line shape for drawing grids
-    sf::RectangleShape line;
-    line.setFillColor(sf::Color(100, 100, 100, 150));
     float startX = -offset.x;
     float startY = -offset.y;
 
-    // iterate from the starting offset up to the grids width and height and draw it
-    for (float x = startX; x <= layer.width * layerTileSize - offset.x; x += layerTileSize) {
-        // height of the grid
-        line.setSize(sf::Vector2f(1.f, layer.height * layerTileSize));
-        // position of each drawn line relative to panning offset
-        line.setPosition(x, -offset.y); 
-        target.draw(line);
+    sf::VertexArray gridLines(sf::Lines);
+
+    for (float x = startX; x <= layer.width * layerTileSize - offset.x; 
+        x += layerTileSize)
+    {
+        gridLines.append(sf::Vertex(sf::Vector2f(x, -offset.y), 
+            sf::Color(100, 100, 100, 150)));
+        gridLines.append(sf::Vertex(sf::Vector2f(x, layer.height * layerTileSize
+            - offset.y), sf::Color(100, 100, 100, 150)));
     }
-    // same here but for horizontal grid lines
-    for (float y = startY; y <= layer.height * layerTileSize - offset.y; y += layerTileSize) {
-        // width of the grid
-        line.setSize(sf::Vector2f(layer.width * layerTileSize, 1.f));
-        line.setPosition(-offset.x, y);
-        target.draw(line);
+    for (float y = startY; y <= layer.height * layerTileSize - offset.y;
+        y += layerTileSize)
+    {
+        gridLines.append(sf::Vertex(sf::Vector2f(-offset.x, y), 
+            sf::Color(100, 100, 100, 150)));
+        gridLines.append(sf::Vertex(sf::Vector2f(layer.width * layerTileSize
+            - offset.x, y), sf::Color(100, 100, 100, 150)));
     }
+    target.draw(gridLines);
 }
 
 // -------------------------------- COLLISION LAYER FUNCTIONS --------------------------------
@@ -175,7 +176,7 @@ void TileMap::HandleCollisionPlacement(const sf::Vector2f& mousePos,
     }
 }
 
-void TileMap::DrawCollisionOverlay(sf::RenderTarget& target, int index) 
+void TileMap::DrawCollisionOverlay(sf::RenderTarget& target, int index)
 {
     if (index < 0 || index >= layers.size()) return;
 
@@ -238,12 +239,12 @@ void TileMap::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
                 int startTileY = selectionStartIndices.y / editor.baseTileSize;
 
                 // iterate over the selected grid area (tile indices)
-                for (int ty = bounds.top / editor.baseTileSize; ty < (bounds.top 
+                for (int ty = bounds.top / editor.baseTileSize; ty < (bounds.top
                     + bounds.height) / editor.baseTileSize; ++ty) {
                     for (int tx = bounds.left / editor.baseTileSize; tx < (bounds.left
                         + bounds.width) / editor.baseTileSize; ++tx) {
                         // ensure the coordinates are within the layer bounds
-                        if (tx >= 0 && tx < currentLayer.width && ty >= 0 
+                        if (tx >= 0 && tx < currentLayer.width && ty >= 0
                             && ty < currentLayer.height) {
                             const Tile& tile = currentLayer.layer[ty][tx];
 
@@ -252,7 +253,7 @@ void TileMap::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
                                 SelectedTileData data;
                                 data.textureRect = tile.sprite.getTextureRect();
                                 // calculate offset relative to selection start
-                                data.offset = sf::Vector2i(tx - startTileX, 
+                                data.offset = sf::Vector2i(tx - startTileX,
                                     ty - startTileY);
                                 currentSelection.tiles.push_back(data);
                             }
@@ -265,7 +266,7 @@ void TileMap::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
 }
 
 
-sf::IntRect TileMap::GetSelectionBounds() const 
+sf::IntRect TileMap::GetSelectionBounds() const
 {
     int left = std::min(selectionStartIndices.x, selectionEndIndices.x);
     int top = std::min(selectionStartIndices.y, selectionEndIndices.y);
@@ -276,12 +277,12 @@ sf::IntRect TileMap::GetSelectionBounds() const
     return sf::IntRect(left, top, right - left, bottom - top);
 }
 
-void TileMap::DrawDragSelection(sf::RenderTarget& target) 
+void TileMap::DrawDragSelection(sf::RenderTarget& target)
 {
     // when isSelecting is true, draw selection box
     if (isSelecting) {
         // get the bounds of selection rectangle based on selection indices
-        sf::IntRect bounds = GetSelectionBounds();  
+        sf::IntRect bounds = GetSelectionBounds();
         // bounds left/top are scaled with atlasScaleFactor to reflect the zoom level,
         // the atlasViewOffset is then subtracted to align with a zoomed/panned grid
         sf::Vector2f adjustedPosition(
@@ -301,7 +302,7 @@ void TileMap::DrawDragSelection(sf::RenderTarget& target)
 }
 
 // -------------------------------- UTILITY FUNCTIONS --------------------------------
-void TileMap::SetCurrentLayer(int index) 
+void TileMap::SetCurrentLayer(int index)
 {
     if (index >= 0 && index < layers.size()) {
         activeLayerIndex = index;
@@ -326,11 +327,11 @@ void TileMap::HandlePanning(sf::Vector2f mousePos, bool isPanning, float deltaTi
     }
     else {
         // keep it at the current mouse position when panning stops
-        lastMousePos = sf::Vector2f(0, 0); 
+        lastMousePos = sf::Vector2f(0, 0);
     }
 }
 
-void TileMap::UpdateTileScale(float scaleFactor) 
+void TileMap::UpdateTileScale(float scaleFactor)
 {
     layerScaleFactor = scaleFactor;
     layerTileSize = editor.baseTileSize * layerScaleFactor;
@@ -348,15 +349,15 @@ void TileMap::UpdateTileScale(float scaleFactor)
     }
 }
 
-void TileMap::MergeAllLayers(sf::RenderTarget& target, bool showMergedLayers) 
+void TileMap::MergeAllLayers(sf::RenderTarget& target, bool showMergedLayers)
 {
     // if showMergedLayers was passed in as false, exit early
-    if (!showMergedLayers) return;  
+    if (!showMergedLayers) return;
     sf::Vector2f offset = editor.layerViewOffset;   // get the offset from panning
     // loop through layers drawing them at 0.5 opacity
     for (int i = 0; i < layers.size(); ++i) {
         // when the loop reaches the active layer, skip it as its already drawn
-        if (i == activeLayerIndex) continue;    
+        if (i == activeLayerIndex) continue;
         // set layer variable to the current layer index the loop is at
         const TileLayer& layer = layers[i];
         // skip invisible layers
@@ -370,13 +371,13 @@ void TileMap::MergeAllLayers(sf::RenderTarget& target, bool showMergedLayers)
                     // copy the tile at this width/height of the current layer
                     sf::Sprite tileSprite = tile.sprite;
                     // set the tile sprite to 0.5 opacity
-                    tileSprite.setColor(sf::Color(255, 255, 255, 100)); 
+                    tileSprite.setColor(sf::Color(255, 255, 255, 100));
                     tileSprite.setPosition(
                         (x * layerTileSize) - offset.x,
                         (y * layerTileSize) - offset.y
-                    );  
+                    );
                     // make sure it scales to the active layer's size if its' been zoomed
-                    tileSprite.setScale(layerScaleFactor, layerScaleFactor);    
+                    tileSprite.setScale(layerScaleFactor, layerScaleFactor);
                     target.draw(tileSprite);
                 }
             }

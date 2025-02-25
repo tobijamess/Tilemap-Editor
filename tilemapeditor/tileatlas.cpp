@@ -8,7 +8,7 @@ TileAtlas::TileAtlas(Editor& editor) : editor(editor) {}
 bool TileAtlas::Initialize()
 {
     if (!textureAtlas.loadFromFile("assets/map/tilemap16.png")) {
-        return false; 
+        return false;
     }
     atlasSprite.setTexture(textureAtlas);
     atlasSprite.setPosition(0.f, 0.f); // set to top left of the atlas viewport
@@ -16,7 +16,7 @@ bool TileAtlas::Initialize()
 }
 
 void TileAtlas::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
-    float deltaTime) 
+    float deltaTime)
 {
     // adjust mouse position by accounting for panning and zoom
     sf::Vector2i texturePos = Utility::SnapToGrid(mousePos, editor.atlasViewOffset,
@@ -50,18 +50,18 @@ void TileAtlas::HandleSelection(sf::Vector2f mousePos, bool isSelecting,
             int startTileY = selectionStartIndices.y / editor.baseTileSize;
 
             // loop over selected region and record each tile relative to offset
-            for (int y = bounds.top; y < bounds.top + bounds.height; y 
-                += editor.baseTileSize) 
+            for (int y = bounds.top; y < bounds.top + bounds.height; y
+                += editor.baseTileSize)
             {
-                for (int x = bounds.left; x < bounds.left + bounds.width; x 
-                    += editor.baseTileSize) 
+                for (int x = bounds.left; x < bounds.left + bounds.width; x
+                    += editor.baseTileSize)
                 {
                     TileMap::SelectedTileData data;
                     data.textureRect = sf::IntRect(x, y, editor.baseTileSize,
                         editor.baseTileSize);
                     int currentTileX = x / editor.baseTileSize;
                     int currentTileY = y / editor.baseTileSize;
-                    data.offset = sf::Vector2i(currentTileX - startTileX, 
+                    data.offset = sf::Vector2i(currentTileX - startTileX,
                         currentTileY - startTileY);
                     editor.GetTileMap()->currentSelection.tiles.push_back(data);
                 }
@@ -77,38 +77,40 @@ void TileAtlas::DrawAtlas(sf::RenderTarget& target)
     // scaledTileSize is based on tileSize which updates when zooming
     float scaledTileSize = atlasTileSize;
     // scale the atlas sprite tiles based on the zoom
-    atlasSprite.setScale(scaledTileSize / editor.baseTileSize, 
+    atlasSprite.setScale(scaledTileSize / editor.baseTileSize,
         scaledTileSize / editor.baseTileSize);
     // set the atlas sprite position based on the panning offset
-    atlasSprite.setPosition(-offset);   
+    atlasSprite.setPosition(-offset);
     target.draw(atlasSprite);
 
     // draw grid with fixed dimensions of 50x100
     int gridWidth = 50;
     int gridHeight = 100;
 
-    // create line shape to draw grid with
-    sf::RectangleShape line;    
-    line.setFillColor(sf::Color(100, 100, 100, 150));
-
     // starting positions of horizontal and vertical gridlines based on the offset
     // using round to prevent grid gaps when resizing
     float startX = std::round(-offset.x);
     float startY = std::round(-offset.y);
 
-    // iterate from the starting offset up to the grids width and height and draw
-    for (float x = startX; x <= gridWidth * atlasTileSize - offset.x; x += atlasTileSize) {
-        line.setSize(sf::Vector2f(1.25f, gridHeight * atlasTileSize)); // height of the grid
-        // position of each drawn line relative to panning offset
-        line.setPosition(x, -offset.y);
-        target.draw(line);
+    sf::VertexArray gridLines(sf::Lines);
+
+    for (float x = startX; x <= gridWidth * atlasTileSize - offset.x;
+        x += atlasTileSize) 
+    {
+        gridLines.append(sf::Vertex(sf::Vector2f(x, -offset.y),
+            sf::Color(100, 100, 100, 150)));
+        gridLines.append(sf::Vertex(sf::Vector2f(x, gridHeight * atlasTileSize
+            - offset.y), sf::Color(100, 100, 100, 150)));
     }
-    // same here but for horizontal grid lines
-    for (float y = startY; y <= gridHeight * atlasTileSize - offset.y; y += atlasTileSize) {
-        line.setSize(sf::Vector2f(gridWidth * atlasTileSize, 1.25f)); // width of the grid
-        line.setPosition(-offset.x, y);
-        target.draw(line);
+    for (float y = startY; y <= gridHeight * atlasTileSize - offset.y;
+        y += atlasTileSize) 
+    {
+        gridLines.append(sf::Vertex(sf::Vector2f(-offset.x, y),
+            sf::Color(100, 100, 100, 150)));
+        gridLines.append(sf::Vertex(sf::Vector2f(gridWidth * atlasTileSize
+            - offset.x, y), sf::Color(100, 100, 100, 150)));
     }
+    target.draw(gridLines);
 }
 
 void TileAtlas::DrawDragSelection(sf::RenderTarget& target)
@@ -117,7 +119,7 @@ void TileAtlas::DrawDragSelection(sf::RenderTarget& target)
     // draw a selection box based on the calculated bounds
     if (isSelecting) {
         // get bounds of selection rectangle based on selection indices
-        sf::IntRect bounds = GetSelectionBounds();  
+        sf::IntRect bounds = GetSelectionBounds();
         // bounds left/top are scaled with atlasScaleFactor to reflect zoom level, 
         // the atlasViewOffset is then subtracted to align with a zoomed/panned grid
         sf::Vector2f adjustedPosition(
@@ -136,7 +138,7 @@ void TileAtlas::DrawDragSelection(sf::RenderTarget& target)
     }
 }
 
-sf::IntRect TileAtlas::GetSelectionBounds() const 
+sf::IntRect TileAtlas::GetSelectionBounds() const
 {
     int left = std::min(selectionStartIndices.x, selectionEndIndices.x);
     int top = std::min(selectionStartIndices.y, selectionEndIndices.y);
@@ -149,7 +151,7 @@ sf::IntRect TileAtlas::GetSelectionBounds() const
 }
 
 void TileAtlas::HandlePanning(sf::Vector2f mousePos, bool isPanning,
-    float deltaTime) 
+    float deltaTime)
 {
     static sf::Vector2f lastMousePos;
     if (isPanning) {
@@ -165,7 +167,7 @@ void TileAtlas::HandlePanning(sf::Vector2f mousePos, bool isPanning,
     }
 }
 
-void TileAtlas::UpdateTileSize(float scaleFactor) 
+void TileAtlas::UpdateTileSize(float scaleFactor)
 {
     // calculate new tile size for zooming using the base tile size and scale factor
     atlasTileSize = static_cast<int>(editor.baseTileSize * scaleFactor);

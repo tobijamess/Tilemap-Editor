@@ -6,7 +6,7 @@
 UI::UI(Editor& editor) : editor(editor) {}
 
 // load the ui font, will be called when a new ui instance is initialized in editor
-bool UI::Initialize() 
+bool UI::Initialize()
 {
     if (!font.loadFromFile("assets/fonts/font.ttf")) {
         std::cerr << "Failed to load font: \n";
@@ -26,7 +26,7 @@ void UI::HandleInteraction(const sf::Vector2f& mousePos,
             if (label == "Save Tilemap" || label == "Load Tilemap") {
                 lastClickedButton = label;
                 // activate text input for saving or loading a tile map file
-                ActivateTextInput();    
+                ActivateTextInput();
             }
             // depending on which button was pressed, pass different layer sizes
             else if (label == "50x50 Grid") {
@@ -40,11 +40,11 @@ void UI::HandleInteraction(const sf::Vector2f& mousePos,
             }
             else if (label == "Merge Layers") {
                 // toggle showMergedLayers bool everytime button is pressed
-                editor.GetTileMap()->showMergedLayers 
-                    = !editor.GetTileMap()->showMergedLayers; 
+                editor.GetTileMap()->showMergedLayers
+                    = !editor.GetTileMap()->showMergedLayers;
                 // merge layers depending on the current bool state
                 editor.GetTileMap()->MergeAllLayers(window,
-                    editor.GetTileMap()->showMergedLayers); 
+                    editor.GetTileMap()->showMergedLayers);
             }
             else if (label == "Eraser") {
                 editor.GetTileMap()->ToggleEraserMode();
@@ -61,7 +61,7 @@ void UI::HandleInteraction(const sf::Vector2f& mousePos,
     }
 }
 
-void UI::DrawUI(sf::RenderWindow& window) 
+void UI::DrawUI(sf::RenderWindow& window)
 {
     // populate the buttons vector if empty 
     if (buttons.empty()) {
@@ -89,7 +89,7 @@ void UI::DrawUI(sf::RenderWindow& window)
         };
 
         // iterate through the button labels vector and create buttons
-        for (const auto &label : leftButtons) {
+        for (const auto& label : leftButtons) {
             // create and position the buttons with the properties defined above
             Button button;
             button.shape.setSize(buttonSize);
@@ -111,23 +111,24 @@ void UI::DrawUI(sf::RenderWindow& window)
             leftY += buttonSize.y + buttonSpacing;
         }
 
-        for (const auto &label : rightButtons) { 
-            Button button; 
-            button.shape.setSize(buttonSize); 
-            button.shape.setFillColor(sf::Color(150, 150, 150)); 
-            button.shape.setPosition(rightX, rightY); 
-            button.label.setFont(font); 
-            button.label.setString(label); 
-            button.label.setCharacterSize(16); 
-            button.label.setFillColor(sf::Color::Black); 
+        for (const auto& label : rightButtons) {
+            Button button;
+            button.shape.setSize(buttonSize);
+            button.shape.setFillColor(sf::Color(150, 150, 150));
+            button.shape.setPosition(rightX, rightY);
+            button.label.setFont(font);
+            button.label.setString(label);
+            button.label.setCharacterSize(16);
+            button.label.setFillColor(sf::Color::Black);
             // center the label 
-            sf::FloatRect textBounds = button.label.getLocalBounds(); 
+            sf::FloatRect textBounds = button.label.getLocalBounds();
             button.label.setPosition(rightX + (buttonSize.x - textBounds.width)
                 / 2.f - textBounds.left, rightY + (buttonSize.y - textBounds.height)
-                / 2.f - textBounds.top 
-            ); 
-            buttons.push_back(button); 
-            rightY += buttonSize.y + buttonSpacing; }
+                / 2.f - textBounds.top
+            );
+            buttons.push_back(button);
+            rightY += buttonSize.y + buttonSpacing;
+        }
     }
     for (const auto& button : buttons) {
         // draw the button and its label
@@ -140,7 +141,7 @@ void UI::ResetButtons() {
     buttons.clear();
 }
 
-void UI::ActivateTextInput() 
+void UI::ActivateTextInput()
 {
     isTextInputActive = true;
     inputText.clear();

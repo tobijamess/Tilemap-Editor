@@ -26,23 +26,23 @@ Editor::Editor()
     InitializeClass();
 }
 
-void Editor::InitializeClass() 
+void Editor::InitializeClass()
 {
     // create a new instance and pass a reference to the current Editor instance
-    ui = std::make_shared<UI>(*this); 
-    ui->Initialize();   
+    ui = std::make_shared<UI>(*this);
+    ui->Initialize();
     tileAtlas = std::make_shared<TileAtlas>(*this);
     tileAtlas->Initialize();
     tileMap = std::make_shared<TileMap>(*this, *tileAtlas);
     // no tileMap initialization because it gets created upon ui interaction
 }
 
-void Editor::Run() 
+void Editor::Run()
 {
     sf::Clock clock;
     while (window.isOpen()) {
         // use deltatime to make actions relative to time not framerate
-        float deltaTime = clock.restart().asSeconds();  
+        float deltaTime = clock.restart().asSeconds();
         HandleEvents(deltaTime);
         Render(window);
     }
@@ -68,7 +68,7 @@ void Editor::HandleResize(const sf::Event& event) {
 }
 
 
-void Editor::HandleEvents(float deltaTime) 
+void Editor::HandleEvents(float deltaTime)
 {
     sf::Event event;
     inputDelay -= deltaTime;
@@ -97,19 +97,19 @@ void Editor::HandleEvents(float deltaTime)
 
         // delegate to view-specific handlers based on the viewport
         if (GetViewportBounds(atlasView, window).contains(static_cast
-            <sf::Vector2f>(mousePos))) 
+            <sf::Vector2f>(mousePos)))
         {
             HandleAtlasEvents(event, atlasMousePos, deltaTime,
                 isRightMouseDragging, isMiddleMouseDragging);
         }
         else if (GetViewportBounds(layerView, window).contains(
-            static_cast<sf::Vector2f>(mousePos))) 
+            static_cast<sf::Vector2f>(mousePos)))
         {
-            HandleLayerEvents(event, layerMousePos, deltaTime, 
+            HandleLayerEvents(event, layerMousePos, deltaTime,
                 isLeftMouseDragging, isRightMouseDragging, isMiddleMouseDragging);
         }
         else if (GetViewportBounds(uiView, window).contains(static_cast<
-            sf::Vector2f>(mousePos))) 
+            sf::Vector2f>(mousePos)))
         {
             HandleUIEvents(event, uiMousePos, deltaTime);
         }
@@ -122,7 +122,7 @@ void Editor::HandleEvents(float deltaTime)
     }
 }
 
-void Editor::ProcessKeyboardInputs() 
+void Editor::ProcessKeyboardInputs()
 {
     int layerIndex = -1;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) { layerIndex = 0; }
@@ -136,9 +136,9 @@ void Editor::ProcessKeyboardInputs()
     }
 }
 
-void Editor::HandleAtlasEvents(const sf::Event& event, 
-    const sf::Vector2f& atlasMousePos, float deltaTime, 
-    bool isRightDragging, bool isMiddleDragging) 
+void Editor::HandleAtlasEvents(const sf::Event& event,
+    const sf::Vector2f& atlasMousePos, float deltaTime,
+    bool isRightDragging, bool isMiddleDragging)
 {
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Right)
@@ -164,9 +164,9 @@ void Editor::HandleAtlasEvents(const sf::Event& event,
     }
 }
 
-void Editor::HandleLayerEvents(const sf::Event& event, 
+void Editor::HandleLayerEvents(const sf::Event& event,
     const sf::Vector2f& layerMousePos, float deltaTime, bool isLeftDragging,
-    bool isRightDragging, bool isMiddleDragging) 
+    bool isRightDragging, bool isMiddleDragging)
 {
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
@@ -193,7 +193,7 @@ void Editor::HandleLayerEvents(const sf::Event& event,
     else if (event.type == sf::Event::MouseMoved) {
         if (isLeftDragging) {
             if (tileMap->eraserActive)
-            tileMap->RemoveTile(layerMousePos);
+                tileMap->RemoveTile(layerMousePos);
             else if (!tileMap->showCollisionOverlay)
                 tileMap->HandleTilePlacement(layerMousePos);
             else
@@ -210,7 +210,7 @@ void Editor::HandleLayerEvents(const sf::Event& event,
 }
 
 void Editor::HandleUIEvents(const sf::Event& event, const sf::Vector2f& uiMousePos,
-    float deltaTime) 
+    float deltaTime)
 {
     if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left && inputDelay <= 0.f)
@@ -218,7 +218,7 @@ void Editor::HandleUIEvents(const sf::Event& event, const sf::Vector2f& uiMouseP
     }
 }
 
-void Editor::Render(sf::RenderWindow& window) 
+void Editor::Render(sf::RenderWindow& window)
 {
     window.clear();
 
@@ -252,8 +252,8 @@ void Editor::Render(sf::RenderWindow& window)
     window.display();
 }
 
-sf::FloatRect Editor::GetViewportBounds(const sf::View& view, 
-    const sf::RenderWindow& window) 
+sf::FloatRect Editor::GetViewportBounds(const sf::View& view,
+    const sf::RenderWindow& window)
 {
     sf::FloatRect viewport = view.getViewport();
     // determine and return the viewport rect dimensions to determine its bounds
@@ -265,23 +265,23 @@ sf::FloatRect Editor::GetViewportBounds(const sf::View& view,
     );
 }
 
-void Editor::HandleAtlasZoom(sf::View& view, float delta, 
-    const sf::Vector2f& originalSize) 
+void Editor::HandleAtlasZoom(sf::View& view, float delta,
+    const sf::Vector2f& originalSize)
 {
     // set new zoom index based on if scroll delta is positive or negative
-    int newZoomIndex = currentZoomIndex + (delta < 0 ? -1 : 1); 
+    int newZoomIndex = currentZoomIndex + (delta < 0 ? -1 : 1);
     newZoomIndex = std::clamp(newZoomIndex, 0, static_cast<int>(zoomLevels.size()) - 1);
     if (newZoomIndex != currentZoomIndex) {
         currentZoomIndex = newZoomIndex;
         // scale relative to the base zoom level
         atlasScaleFactor = static_cast<float>(zoomLevels[currentZoomIndex])
-            / zoomLevels[0]; 
+            / zoomLevels[0];
         tileAtlas->UpdateTileSize(atlasScaleFactor);
     }
 }
 
-void Editor::HandleLayerZoom(sf::View& view, float delta, 
-    const sf::Vector2f& originalSize) 
+void Editor::HandleLayerZoom(sf::View& view, float delta,
+    const sf::Vector2f& originalSize)
 {
     int newZoomIndex = currentZoomIndex + (delta < 0 ? -1 : 1);
     newZoomIndex = std::clamp(newZoomIndex, 0, static_cast<int>(zoomLevels.size()) - 1);
@@ -289,7 +289,7 @@ void Editor::HandleLayerZoom(sf::View& view, float delta,
         currentZoomIndex = newZoomIndex;
 
         layerScaleFactor = static_cast<float>(zoomLevels[currentZoomIndex])
-            / zoomLevels[0]; 
+            / zoomLevels[0];
         tileMap->UpdateTileScale(layerScaleFactor);
     }
 }

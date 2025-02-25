@@ -16,7 +16,7 @@ private:
         sf::Text label; // label of text that will sit on the button
     };
     std::vector<Button> buttons;    // list of all the button structs in the ui
-    
+
     bool isTextInputActive = false; // tracks the text input for filenames (for save and load buttons)
     std::string inputText;  // store the input text (filename) entered
     sf::RectangleShape inputBox;    // rectangle element for the input box

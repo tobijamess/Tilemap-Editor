@@ -28,4 +28,4 @@ struct TileAtlas {
     // getter function to return information about the tile e.g. texture of a tile
     const sf::Texture& GetTexture() { return textureAtlas; }
 };
-#endif
+#endif // !TILEATLAS_H
